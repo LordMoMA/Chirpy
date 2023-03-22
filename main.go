@@ -14,9 +14,6 @@ func main() {
 	// Add a handler for the root path
 	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
 
-	// Add a handler for files in the assets path
-	// mux.Handle("/assets/", http.FileServer(http.Dir(filepath.Join(filepathRoot, "assets"))))
-
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(mux)
 
