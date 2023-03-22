@@ -5,18 +5,20 @@ import (
 )
 
 func main() {
+	const filepathRoot = "."
+	const port = "8080"
 	// Create a new http.ServeMux
 	mux := http.NewServeMux()
 
 	// Add a handler for the root path
-	mux.Handle("/", http.FileServer(http.Dir(".")))
+	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(mux)
 
 	// Create a new http.Server and use the corsMux as the handler
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: corsMux,
 	}
 
