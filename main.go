@@ -8,6 +8,10 @@ func main() {
 	// Create a new http.ServeMux
 	mux := http.NewServeMux()
 
+	// add a handler for the root path
+	mux.Handle("/", http.FileServer(http.Dir(".")))
+	http.ListenAndServe(":8000", mux)
+
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(mux)
 
