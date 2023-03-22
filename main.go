@@ -1,21 +1,36 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"sync/atomic"
 )
+
+apiCfg := apiConfig{
+	fileserverHits uint64
+}
 
 func main() {
 	const filepathRoot = "."
 	const port = "8080"
+
+
+	// Create a new apiConfig struct to hold the request count
+	apiCfg := apiConfig{}
 	// Create a new http.ServeMux
 	mux := http.NewServeMux()
 
-	// Add a handler for the root path
-	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
+	// Wrap the http.FileServer handler with a custom middleware function that increments the request count
+	mux.Handle("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
+
 
 	// Add a handler for the /healthz path
 	mux.HandleFunc("/healthz", healthzHandler)
+
+	// Add a handler for the /metrics path that returns the request count as plain text
+	mux.HandleFunc("/metrics", apiCfg.metricsHandler)
+
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(mux)
@@ -43,4 +58,8 @@ func healthzHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Write the body text using w.Write
 	w.Write([]byte("OK"))
+}
+
+func metricsHandler(w http.ResponseWriter, r *http.Request){
+
 }
