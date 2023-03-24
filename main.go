@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"sync/atomic"
@@ -27,7 +26,7 @@ func main() {
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()
-	adminRouter.Get("/metrics", apiCfg.adminMetricsHandler)
+	adminRouter.Get("/metrics", apiCfg.metricsHandler)
 
 	// Mount the apiRouter at /api in the main router
 	r := chi.NewRouter()
@@ -65,34 +64,23 @@ func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 }
 
 func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, r *http.Request) {
-	// Write the Content-Type header
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Write the status code using w.WriteHeader
-	w.WriteHeader(http.StatusOK)
-
-	// Write the body text using w.Write
-	fmt.Fprintf(w, "Hits: %d", atomic.LoadUint64(&cfg.fileserverHits))
-}
-
-func (cfg *apiConfig) adminMetricsHandler(w http.ResponseWriter, r *http.Request) {
 	// Load the current request count
 	hits := atomic.LoadUint64(&cfg.fileserverHits)
 
-	// Create a new template with the current request count
-	tmpl := template.Must(template.New("adminMetrics").Parse(`
-		<html>
-			<body>
-				<h1>Welcome, Chirpy Admin</h1>
-				<p>Chirpy has been visited {{.}} times!</p>
-			</body>
-		</html>
-	`))
+	// Create the response string with the current request count
+	resp := fmt.Sprintf(`
+	<html>
+		<body>
+			<h1>Welcome, Chirpy Admin</h1>
+			<p>Chirpy has been visited %d times!</p>
+		</body>
+	</html>
+`, hits)
 
-	// Execute the template with the request count and write the response
+	// Write the response to the output stream
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	tmpl.Execute(w, hits)
+	w.Write([]byte(resp))
 }
 
 func healthzHandler(w http.ResponseWriter, r *http.Request) {
