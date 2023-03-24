@@ -58,7 +58,8 @@ func main() {
 func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
 	// Decode the JSON body into a struct
 	var chirp struct {
-		Body string `json:"body"`
+		Body         string `json:"body"`
+		Cleaned_body string `json:"cleaned_body"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&chirp)
 	if err != nil {
