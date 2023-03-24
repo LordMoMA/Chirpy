@@ -32,9 +32,9 @@ func main() {
 	r := chi.NewRouter()
 	r.Mount("/api", apiRouter)
 	r.Mount("/admin", adminRouter)
-	r.Mount("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
 
 	// Serve static files from the root directory and add the middleware to track metrics
+	r.Mount("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(r)
