@@ -56,33 +56,29 @@ func main() {
 	}
 }
 
-func (cfg *apiConfig) validateHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var chirp struct {
-			Body string `json:"body"`
-		}
+func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
 
-		err := json.NewDecoder(r.Body).Decode(&chirp)
-		if err != nil {
-			respondWithError(w, http.StatusBadRequest, "Invalid request body")
-			return
-		}
-
-		// Replace profane words with asterisks
-		profaneWords := []string{"kerfuffle", "sharbert", "fornax"}
-		for _, word := range profaneWords {
-			chirp.Body = strings.ReplaceAll(chirp.Body, word, "****")
-			chirp.Body = strings.ReplaceAll(chirp.Body, strings.Title(word), "****")
-		}
-
-		response := struct {
-			CleanedBody string `json:"cleaned_body"`
-		}{
-			CleanedBody: chirp.Body,
-		}
-
-		respondWithJSON(w, http.StatusOK, response)
+	var chirp struct {
+		Body string `json:"body"`
 	}
+
+	err := json.NewDecoder(r.Body).Decode(&chirp)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Replace profane words with asterisks
+
+	replaceProfane(chirp.Body)
+
+	response := struct {
+		CleanedBody string `json:"cleaned_body"`
+	}{
+		CleanedBody: chirp.Body,
+	}
+
+	respondWithJSON(w, http.StatusOK, response)
 }
 
 func replaceProfane(text string) string {
@@ -91,6 +87,7 @@ func replaceProfane(text string) string {
 		text = strings.ReplaceAll(text, word, "****")
 		text = strings.ReplaceAll(text, strings.ToUpper(word), "****")
 	}
+	return text
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
