@@ -68,8 +68,6 @@ func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Replace profane words with asterisks
-
 	cleanedBody := replaceProfane(chirp.Body)
 
 	respondWithJSON(w, http.StatusOK, map[string]string{"cleaned_body": cleanedBody})
