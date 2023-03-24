@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/go-chi/chi"
 )
 
 type apiConfig struct {
@@ -17,17 +19,12 @@ func main() {
 
 	// Create a new apiConfig struct to hold the request count
 	apiCfg := &apiConfig{}
-	// Create a new http.ServeMux
-	mux := http.NewServeMux()
 
-	// Wrap the http.FileServer handler with a custom middleware function that increments the request count
-	mux.Handle("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
+	r := chi.NewRouter()
 
-	// Add a handler for the /healthz path
-	mux.HandleFunc("/healthz", healthzHandler)
-
-	// Add a handler for the /metrics path that returns the request count as plain text
-	mux.HandleFunc("/metrics", apiCfg.metricsHandler)
+	r.Mount("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
+	r.Get("/healthz", healthzHandler)
+	r.Get("/metrics", apiCfg.metricsHandler)
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(mux)
