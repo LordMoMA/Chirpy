@@ -70,15 +70,10 @@ func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Replace profane words with asterisks
 
-	replaceProfane(chirp.Body)
+	cleanedBody := replaceProfane(chirp.Body)
 
-	response := struct {
-		CleanedBody string `json:"cleaned_body"`
-	}{
-		CleanedBody: chirp.Body,
-	}
+	respondWithJSON(w, http.StatusOK, map[string]string{"cleaned_body": cleanedBody})
 
-	respondWithJSON(w, http.StatusOK, response)
 }
 
 func replaceProfane(text string) string {
@@ -96,32 +91,9 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(payload)
-}
-
-func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
-	// Decode the JSON body into a struct
-	var chirp struct {
-		Body string `json:"body"`
-	}
-	err := json.NewDecoder(r.Body).Decode(&chirp)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
-		return
-	}
-
-	// Check if the Chirp is too long
-	if len(chirp.Body) > 140 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Chirp is too long"})
-		return
-	}
-
-	// If the Chirp is valid, respond with a success message
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]bool{"valid": true})
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
