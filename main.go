@@ -55,7 +55,7 @@ func main() {
 	}
 }
 
-func (cfg *apiConfig) validateChirpHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
 	// Decode the JSON body into a struct
 	var chirp struct {
 		Body string `json:"body"`
