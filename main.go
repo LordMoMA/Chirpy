@@ -20,11 +20,20 @@ func main() {
 	// Create a new apiConfig struct to hold the request count
 	apiCfg := &apiConfig{}
 
-	r := chi.NewRouter()
+	// Create a new router for the /api namespace
+	apiRouter := chi.NewRouter()
+	apiRouter.Get("/healthz", healthzHandler)
 
+	// create a new router for the admin
+	adminRouter := chi.NewRouter()
+	adminRouter.Get("/metrics", apiCfg.metricsHandler)
+	// Mount the apiRouter at /api in the main router
+	r := chi.NewRouter()
+	r.Mount("/api", apiRouter)
+	r.Mount("/admin", adminRouter)
+
+	// Serve static files from the root directory and add the middleware to track metrics
 	r.Mount("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
-	r.Get("/healthz", healthzHandler)
-	r.Get("/metrics", apiCfg.metricsHandler)
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(r)
@@ -55,7 +64,7 @@ func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 
 func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, r *http.Request) {
 	// Write the Content-Type header
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Write the status code using w.WriteHeader
 	w.WriteHeader(http.StatusOK)
