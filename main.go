@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,6 +24,7 @@ func main() {
 	// Create a new router for the /api namespace
 	apiRouter := chi.NewRouter()
 	apiRouter.Get("/healthz", healthzHandler)
+	apiRouter.Post("/validate_chirp", apiCfg.validateHandler)
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()
@@ -51,6 +53,30 @@ func main() {
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
+}
+
+func (cfg *apiConfig) validateChirpHandler(w http.ResponseWriter, r *http.Request) {
+	// Decode the JSON body into a struct
+	var chirp struct {
+		Body string `json:"body"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&chirp)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
+		return
+	}
+
+	// Check if the Chirp is too long
+	if len(chirp.Body) > 140 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Chirp is too long"})
+		return
+	}
+
+	// If the Chirp is valid, respond with a success message
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]bool{"valid": true})
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
