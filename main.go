@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"sync/atomic"
@@ -26,14 +27,15 @@ func main() {
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()
-	adminRouter.Get("/metrics", apiCfg.metricsHandler)
+	adminRouter.Get("/metrics", apiCfg.adminMetricsHandler)
+
 	// Mount the apiRouter at /api in the main router
 	r := chi.NewRouter()
 	r.Mount("/api", apiRouter)
 	r.Mount("/admin", adminRouter)
+	r.Mount("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
 
 	// Serve static files from the root directory and add the middleware to track metrics
-	r.Mount("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
 	corsMux := middlewareCors(r)
@@ -71,6 +73,26 @@ func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Write the body text using w.Write
 	fmt.Fprintf(w, "Hits: %d", atomic.LoadUint64(&cfg.fileserverHits))
+}
+
+func (cfg *apiConfig) adminMetricsHandler(w http.ResponseWriter, r *http.Request) {
+	// Load the current request count
+	hits := atomic.LoadUint64(&cfg.fileserverHits)
+
+	// Create a new template with the current request count
+	tmpl := template.Must(template.New("adminMetrics").Parse(`
+		<html>
+			<body>
+				<h1>Welcome, Chirpy Admin</h1>
+				<p>Chirpy has been visited {{.}} times!</p>
+			</body>
+		</html>
+	`))
+
+	// Execute the template with the request count and write the response
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	tmpl.Execute(w, hits)
 }
 
 func healthzHandler(w http.ResponseWriter, r *http.Request) {
