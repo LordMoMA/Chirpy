@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync/atomic"
 
 	"github.com/go-chi/chi"
@@ -55,11 +56,57 @@ func main() {
 	}
 }
 
+func (cfg *apiConfig) validateHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var chirp struct {
+			Body string `json:"body"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&chirp)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Invalid request body")
+			return
+		}
+
+		// Replace profane words with asterisks
+		profaneWords := []string{"kerfuffle", "sharbert", "fornax"}
+		for _, word := range profaneWords {
+			chirp.Body = strings.ReplaceAll(chirp.Body, word, "****")
+			chirp.Body = strings.ReplaceAll(chirp.Body, strings.Title(word), "****")
+		}
+
+		response := struct {
+			CleanedBody string `json:"cleaned_body"`
+		}{
+			CleanedBody: chirp.Body,
+		}
+
+		respondWithJSON(w, http.StatusOK, response)
+	}
+}
+
+func replaceProfane(text string) string {
+	profane := []string{"kerfuffle", "sharbert", "fornax"}
+	for _, word := range profane {
+		text = strings.ReplaceAll(text, word, "****")
+		text = strings.ReplaceAll(text, strings.ToUpper(word), "****")
+	}
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string) {
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(map[string]string{"error": msg})
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(payload)
+}
+
 func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
 	// Decode the JSON body into a struct
 	var chirp struct {
-		Body         string `json:"body"`
-		Cleaned_body string `json:"cleaned_body"`
+		Body string `json:"body"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&chirp)
 	if err != nil {
