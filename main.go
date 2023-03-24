@@ -27,7 +27,7 @@ func main() {
 	r.Get("/metrics", apiCfg.metricsHandler)
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
-	corsMux := middlewareCors(mux)
+	corsMux := middlewareCors(r)
 
 	// Create a new http.Server and use the corsMux as the handler
 	srv := &http.Server{
