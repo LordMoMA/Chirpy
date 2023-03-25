@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 )
 
-func (cfg *apiConfig) MiddlewareMetricsInc(next http.Handler) http.Handler {
+func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Increment the request count
 		atomic.AddUint64(&cfg.fileserverHits, 1)
@@ -16,7 +16,7 @@ func (cfg *apiConfig) MiddlewareMetricsInc(next http.Handler) http.Handler {
 	})
 }
 
-func (cfg *apiConfig) MetricsHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, r *http.Request) {
 	// Load the current request count
 	hits := atomic.LoadUint64(&cfg.fileserverHits)
 

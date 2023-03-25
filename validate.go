@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (cfg *apiConfig) ValidateHandler(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var chirp struct {
 		Id   int    `json:"id"`
