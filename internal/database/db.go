@@ -2,7 +2,7 @@ package database
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"sort"
@@ -105,18 +105,16 @@ func (db *DB) ensureDB() error {
 
 // loadDB reads the database file into memory
 func (db *DB) loadDB() (DBStructure, error) {
-	db.mux.RLock()
-	defer db.mux.RUnlock()
-
-	dbStructure := DBStructure{}
-
-	bytes, err := ioutil.ReadFile(db.path)
+	dbFile, err := os.Open(db.path)
 	if err != nil {
-		return dbStructure, err
+		return DBStructure{}, err
 	}
+	defer dbFile.Close()
 
-	if err := json.Unmarshal(bytes, &dbStructure); err != nil {
-		return dbStructure, err
+	var dbStructure DBStructure
+	err = json.NewDecoder(dbFile).Decode(&dbStructure)
+	if err != nil {
+		return DBStructure{}, err
 	}
 
 	return dbStructure, nil
@@ -147,6 +145,24 @@ func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, chirps)
+}
+
+func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	chirp, err := db.CreateChirp(string(body))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(chirp)
 }
 
 func respondWithError(w http.ResponseWriter, status int, message string) {

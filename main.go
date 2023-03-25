@@ -27,7 +27,7 @@ func main() {
 	// Create a new router for the /api namespace
 	apiRouter := chi.NewRouter()
 	apiRouter.Get("/healthz", healthzHandler)
-	apiRouter.Post("/chirps", apiCfg.validateHandler)
+	apiRouter.Post("/chirps", db.CreateChirpsHandler)
 	apiRouter.Get("/chirps", db.GetChirpsHandler)
 
 	// create a new router for the admin
