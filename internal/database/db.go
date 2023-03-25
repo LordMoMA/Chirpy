@@ -54,10 +54,6 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 		Body: body,
 	}
 
-	if err := validateChirp(chirp); err != nil {
-		return Chirp{}, err
-	}
-
 	dbStructure.Chirps[id] = chirp
 	if err := db.writeDB(dbStructure); err != nil {
 		return Chirp{}, err
