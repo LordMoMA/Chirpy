@@ -142,34 +142,6 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 	return nil
 }
 
-func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	chirps, err := db.GetChirps()
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, chirps)
-}
-
-// func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
-// 	body, err := io.ReadAll(r.Body)
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusBadRequest)
-// 		return
-// 	}
-// 	defer r.Body.Close()
-
-// 	chirp, err := db.CreateChirp(string(body))
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.WriteHeader(http.StatusCreated)
-// 	json.NewEncoder(w).Encode(chirp)
-// }
-
 func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
 	var chirp Chirp
@@ -188,6 +160,16 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	// Write the response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(createdChirp)
+}
+
+func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	chirps, err := db.GetChirps()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, chirps)
 }
 
 func respondWithError(w http.ResponseWriter, status int, message string) {
