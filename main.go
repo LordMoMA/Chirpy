@@ -30,6 +30,7 @@ func main() {
 	apiRouter.Get("/healthz", healthzHandler)
 	apiRouter.Post("/chirps", db.CreateChirpsHandler)
 	apiRouter.Get("/chirps", db.GetChirpsHandler)
+	// apiRouter.Get("/chirps/", db.GetChirpsHandler)
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()
