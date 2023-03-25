@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"sort"
@@ -105,16 +104,20 @@ func (db *DB) ensureDB() error {
 
 // loadDB reads the database file into memory
 func (db *DB) loadDB() (DBStructure, error) {
-	dbFile, err := os.Open(db.path)
-	if err != nil {
-		return DBStructure{}, err
-	}
-	defer dbFile.Close()
+	db.mux.RLock()
+	defer db.mux.RUnlock()
 
 	var dbStructure DBStructure
-	err = json.NewDecoder(dbFile).Decode(&dbStructure)
+
+	file, err := os.Open(db.path)
 	if err != nil {
-		return DBStructure{}, err
+		return dbStructure, err
+	}
+	defer file.Close()
+
+	err = json.NewDecoder(file).Decode(&dbStructure)
+	if err != nil {
+		return dbStructure, err
 	}
 
 	return dbStructure, nil
@@ -125,12 +128,14 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 	db.mux.Lock()
 	defer db.mux.Unlock()
 
-	file, err := json.MarshalIndent(dbStructure, "", " ")
+	file, err := os.Create(db.path)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	if err := os.WriteFile(db.path, file, 0644); err != nil {
+	err = json.NewEncoder(file).Encode(&dbStructure)
+	if err != nil {
 		return err
 	}
 
@@ -147,22 +152,42 @@ func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, chirps)
 }
 
+// func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
+// 	body, err := io.ReadAll(r.Body)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+// 	defer r.Body.Close()
+
+// 	chirp, err := db.CreateChirp(string(body))
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	w.WriteHeader(http.StatusCreated)
+// 	json.NewEncoder(w).Encode(chirp)
+// }
+
 func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
+	// Parse the request body
+	var chirp Chirp
+	if err := json.NewDecoder(r.Body).Decode(&chirp); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
 
-	chirp, err := db.CreateChirp(string(body))
+	// Create the chirp
+	createdChirp, err := db.CreateChirp(chirp.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(chirp)
+	// Write the response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(createdChirp)
 }
 
 func respondWithError(w http.ResponseWriter, status int, message string) {
