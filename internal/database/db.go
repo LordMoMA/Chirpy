@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"sort"
@@ -143,6 +144,7 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 }
 
 func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("CreateChirpsHandler() is being called")
 	// Parse the request body
 	var chirp Chirp
 	if err := json.NewDecoder(r.Body).Decode(&chirp); err != nil {
@@ -163,6 +165,7 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("GetChirpsHandler() is being called")
 	chirps, err := db.GetChirps()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
