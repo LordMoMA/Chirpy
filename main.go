@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi"
 	"github.com/lordmoma/chirpy/internal/database"
@@ -19,6 +20,11 @@ func main() {
 	// Create a new apiConfig struct to hold the request count
 	apiCfg := &apiConfig{}
 
+	file, err := os.OpenFile("database.json", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
 	// Create a new Database
 	db, err := database.NewDB("database.json")
 	if err != nil {
