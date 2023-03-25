@@ -165,7 +165,6 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GetChirpsHandler() is being called")
 	chirps, err := db.GetChirps()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())

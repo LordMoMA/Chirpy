@@ -19,6 +19,7 @@ func main() {
 	// Create a new apiConfig struct to hold the request count
 	apiCfg := &apiConfig{}
 
+	// Create a new Database
 	db, err := database.NewDB("database.json")
 	if err != nil {
 		panic(err)
