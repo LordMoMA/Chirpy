@@ -42,6 +42,7 @@ func NewDB(path string) (*DB, error) {
 		path: path,
 		mux:  &sync.RWMutex{},
 	}
+
 	// Open the file with read and write permissions
 	file, err := os.OpenFile(db.path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
@@ -197,10 +198,10 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(createdChirp)
 }
-func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
-	var user User
+func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
+	var user User
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
