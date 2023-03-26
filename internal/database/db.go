@@ -52,6 +52,25 @@ func NewDB(path string) (*DB, error) {
 }
 
 // CreateChirp creates a new chirp and saves it to disk
+func (db *DB) CreateUser(body string) (Chirp, error) {
+
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return Chirp{}, err
+	}
+
+	id := len(dbStructure.Chirps) + 1
+	chirp := Chirp{
+		ID:   id,
+		Body: body,
+	}
+
+	dbStructure.Chirps[id] = chirp
+	if err := db.writeDB(dbStructure); err != nil {
+		return Chirp{}, err
+	}
+	return chirp, nil
+}
 func (db *DB) CreateChirp(body string) (Chirp, error) {
 
 	dbStructure, err := db.loadDB()
@@ -169,6 +188,26 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(createdChirp)
 }
+func (db *DB) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+	// Parse the request body
+	var chirp Chirp
+	if err := json.NewDecoder(r.Body).Decode(&chirp); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create the user
+	createdUser, err := db.CreateUser(chirp.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Write the response
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(createdUser)
+}
 
 func (db *DB) GetChirpIDHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
@@ -184,7 +223,6 @@ func (db *DB) GetChirpIDHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, chirps[id-1])
-
 }
 
 func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
