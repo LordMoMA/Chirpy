@@ -183,7 +183,7 @@ func (db *DB) GetChirpIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, chirps[id])
+	respondWithJSON(w, http.StatusOK, chirps[id-1])
 
 }
 
