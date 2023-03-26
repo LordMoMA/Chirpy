@@ -183,9 +183,8 @@ func (db *DB) GetChirpIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if chirps[id] != nil {
-		respondWithJSON(w, http.StatusOK, chirps[id])
-	}
+	respondWithJSON(w, http.StatusOK, chirps[id])
+
 }
 
 func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
