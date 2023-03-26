@@ -33,6 +33,7 @@ func main() {
 	apiRouter.Get("/healthz", healthzHandler)
 	apiRouter.Post("/chirps", db.CreateChirpsHandler)
 	apiRouter.Get("/chirps", db.GetChirpsHandler)
+	apiRouter.Get("/chirps/{id}", db.GetChirpIDHandler)
 	// apiRouter.Get("/chirps/", db.GetChirpsHandler)
 
 	// create a new router for the admin

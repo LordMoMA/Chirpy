@@ -6,7 +6,10 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"sync"
+
+	"github.com/go-chi/chi"
 )
 
 // Chirp represents a single chirp message
@@ -165,6 +168,24 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(createdChirp)
+}
+
+func (db *DB) GetChirpIDHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+	chirps, err := db.GetChirps()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if chirps[id] != nil {
+		respondWithJSON(w, http.StatusOK, chirps[id])
+	}
 }
 
 func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
