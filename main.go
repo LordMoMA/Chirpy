@@ -24,6 +24,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	if db == nil {
+		panic("Failed to open database file")
+	}
 
 	// Create a new router for the /api namespace
 	apiRouter := chi.NewRouter()

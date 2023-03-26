@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"sort"
@@ -31,21 +32,32 @@ func NewDB(path string) (*DB, error) {
 		path: path,
 		mux:  &sync.RWMutex{},
 	}
+	// Open the file with read and write permissions
+	file, err := os.OpenFile(db.path, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+
+	// Assign the file to the DB
+	db.path = file.Name()
+
 	if err := db.ensureDB(); err != nil {
 		return nil, err
 	}
+	fmt.Println("calling NewDB()... 📚")
 	return db, nil
 }
 
 // CreateChirp creates a new chirp and saves it to disk
 func (db *DB) CreateChirp(body string) (Chirp, error) {
-	db.mux.Lock()
-	defer db.mux.Unlock()
 
 	dbStructure, err := db.loadDB()
 	if err != nil {
 		return Chirp{}, err
 	}
+	db.mux.Lock()
+	defer db.mux.Unlock()
+	fmt.Println("calling CreateChirp(body string)... 🐦")
 
 	id := len(dbStructure.Chirps) + 1
 	chirp := Chirp{
@@ -57,7 +69,6 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 	if err := db.writeDB(dbStructure); err != nil {
 		return Chirp{}, err
 	}
-
 	return chirp, nil
 }
 
@@ -79,17 +90,19 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 	sort.Slice(chirps, func(i, j int) bool {
 		return chirps[i].ID < chirps[j].ID
 	})
-
+	fmt.Println("calling GetChirps()... 😄")
 	return chirps, nil
 }
 
 // ensureDB creates a new database file if it doesn't exist
 func (db *DB) ensureDB() error {
 	if _, err := os.Stat(db.path); err == nil {
+		fmt.Printf("database file found at path %s\n", db.path)
 		return nil
 	} else if !os.IsNotExist(err) {
 		return err
 	}
+	fmt.Println("calling ensureBD to check the path... 💃🏻")
 
 	dbStructure := DBStructure{
 		Chirps: make(map[int]Chirp),
@@ -98,7 +111,6 @@ func (db *DB) ensureDB() error {
 	if err := db.writeDB(dbStructure); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -119,7 +131,7 @@ func (db *DB) loadDB() (DBStructure, error) {
 	if err != nil {
 		return dbStructure, err
 	}
-
+	fmt.Println("calling loadBD to check the path1... 📢")
 	return dbStructure, nil
 }
 
@@ -138,7 +150,7 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("calling writeBD to check the path2... 😎")
 	return nil
 }
 
@@ -155,10 +167,12 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+		fmt.Println("calling CreateChirpsHandler... 🔨")
 	}
 
 	// Write the response
 	w.Header().Set("Content-Type", "application/json")
+
 	json.NewEncoder(w).Encode(createdChirp)
 }
 
@@ -168,7 +182,7 @@ func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
+	fmt.Println("calling GetChirpsHandler... 😊")
 	respondWithJSON(w, http.StatusOK, chirps)
 }
 
