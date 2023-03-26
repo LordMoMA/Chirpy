@@ -199,17 +199,25 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdChirp)
 }
 
+type CreateUserRequest struct {
+	Email string `json:"email"`
+}
+type CreateUserResponse struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+}
+
 func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
-	var user User
+	var req CreateUserRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// Create the user
-	createdUser, err := db.CreateUser(user.Email)
+	createdUser, err := db.CreateUser(req.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -217,7 +225,7 @@ func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Write the response
 	w.Header().Set("Content-Type", "application/json")
-
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdUser)
 }
 
