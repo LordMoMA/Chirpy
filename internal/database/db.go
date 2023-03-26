@@ -55,9 +55,6 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 	if err != nil {
 		return Chirp{}, err
 	}
-	db.mux.Lock()
-	defer db.mux.Unlock()
-	fmt.Println("calling CreateChirp(body string)... 🐦")
 
 	id := len(dbStructure.Chirps) + 1
 	chirp := Chirp{
@@ -74,8 +71,6 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 
 // GetChirps returns all chirps in the database
 func (db *DB) GetChirps() ([]Chirp, error) {
-	db.mux.RLock()
-	defer db.mux.RUnlock()
 
 	dbStructure, err := db.loadDB()
 	if err != nil {
@@ -90,7 +85,7 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 	sort.Slice(chirps, func(i, j int) bool {
 		return chirps[i].ID < chirps[j].ID
 	})
-	fmt.Println("calling GetChirps()... 😄")
+
 	return chirps, nil
 }
 
@@ -102,7 +97,6 @@ func (db *DB) ensureDB() error {
 	} else if !os.IsNotExist(err) {
 		return err
 	}
-	fmt.Println("calling ensureBD to check the path... 💃🏻")
 
 	dbStructure := DBStructure{
 		Chirps: make(map[int]Chirp),
@@ -131,7 +125,6 @@ func (db *DB) loadDB() (DBStructure, error) {
 	if err != nil {
 		return dbStructure, err
 	}
-	fmt.Println("calling loadBD to check the path1... 📢")
 	return dbStructure, nil
 }
 
@@ -150,7 +143,6 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("calling writeBD to check the path2... 😎")
 	return nil
 }
 
@@ -167,7 +159,6 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-		fmt.Println("calling CreateChirpsHandler... 🔨")
 	}
 
 	// Write the response
@@ -182,7 +173,6 @@ func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	fmt.Println("calling GetChirpsHandler... 😊")
 	respondWithJSON(w, http.StatusOK, chirps)
 }
 
