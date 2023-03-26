@@ -36,7 +36,7 @@ func main() {
 	apiRouter.Get("/chirps/{id}", db.GetChirpIDHandler)
 
 	// create users for /api namespaces
-	apiRouter.Post("/users", db.GetUsersHandler)
+	apiRouter.Post("/users", db.CreateUserHandler)
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()

@@ -14,8 +14,9 @@ import (
 
 // Chirp represents a single chirp message
 type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
+	ID    int    `json:"id"`
+	Body  string `json:"body"`
+	Email string `json:"email"`
 }
 
 // DB represents a database connection
@@ -27,6 +28,12 @@ type DB struct {
 // DBStructure represents the structure of the database file
 type DBStructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
+	Users  map[int]User  `json:"users"`
+}
+
+type User struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
 }
 
 // NewDB creates a new database connection and creates the database file if it doesn't exist
@@ -51,26 +58,28 @@ func NewDB(path string) (*DB, error) {
 	return db, nil
 }
 
-// CreateChirp creates a new chirp and saves it to disk
-func (db *DB) CreateUser(body string) (Chirp, error) {
+func (db *DB) CreateUser(email string) (User, error) {
 
 	dbStructure, err := db.loadDB()
 	if err != nil {
-		return Chirp{}, err
+		return User{}, err
 	}
 
 	id := len(dbStructure.Chirps) + 1
-	chirp := Chirp{
-		ID:   id,
-		Body: body,
+	user := User{
+		ID:    id,
+		Email: email,
 	}
 
-	dbStructure.Chirps[id] = chirp
+	dbStructure.Users[id] = user
+
 	if err := db.writeDB(dbStructure); err != nil {
-		return Chirp{}, err
+		return User{}, err
 	}
-	return chirp, nil
+	return user, nil
 }
+
+// CreateChirp creates a new chirp and saves it to disk
 func (db *DB) CreateChirp(body string) (Chirp, error) {
 
 	dbStructure, err := db.loadDB()
@@ -188,16 +197,18 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(createdChirp)
 }
-func (db *DB) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+
+	var user User
 	// Parse the request body
-	var chirp Chirp
-	if err := json.NewDecoder(r.Body).Decode(&chirp); err != nil {
+
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// Create the user
-	createdUser, err := db.CreateUser(chirp.Body)
+	createdUser, err := db.CreateUser(user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
