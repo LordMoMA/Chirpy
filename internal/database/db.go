@@ -18,7 +18,6 @@ import (
 type Chirp struct {
 	ID   int    `json:"id"`
 	Body string `json:"body"`
-	// Email string `json:"email"`
 }
 type User struct {
 	ID       int    `json:"id"`
@@ -292,6 +291,9 @@ func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Hash the password using the bcrypt.GenerateFromPassword function
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	// Create the user
 	createdUser, err := db.CreateUser(req.Email, string(hashedPassword))
