@@ -292,14 +292,8 @@ func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Hash the password using the bcrypt.GenerateFromPassword function
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
 	// Create the user
-	createdUser, err := db.CreateUser(req.Email, string(hashedPassword))
+	createdUser, err := db.CreateUser(req.Email, req.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

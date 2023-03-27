@@ -13,6 +13,7 @@ type apiConfig struct {
 }
 
 func main() {
+	// godotenv.Load()
 	// // use flag package in Go to parse command line flags
 	// debug := flag.Bool("debug", false, "enable debugging") // create a boolean value for the --debug flag
 
