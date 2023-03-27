@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,6 +15,16 @@ type apiConfig struct {
 }
 
 func main() {
+	// use flag package in Go to parse command line flags
+	debug := flag.Bool("debug", false, "enable debugging") // create a boolean value for the --debug flag
+
+	flag.Parse() // parse the command line flags
+	if *debug {  // check the value of the debug flag
+		fmt.Println("Debugging enabled")
+	} else {
+		fmt.Println("Debugging disabled")
+	}
+
 	const filepathRoot = "."
 	const port = "8080"
 

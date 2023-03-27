@@ -14,8 +14,12 @@ import (
 
 // Chirp represents a single chirp message
 type Chirp struct {
+	ID   int    `json:"id"`
+	Body string `json:"body"`
+	// Email string `json:"email"`
+}
+type User struct {
 	ID    int    `json:"id"`
-	Body  string `json:"body"`
 	Email string `json:"email"`
 }
 
@@ -29,11 +33,6 @@ type DB struct {
 type DBStructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
 	Users  map[int]User  `json:"users"`
-}
-
-type User struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
 }
 
 // NewDB creates a new database connection and creates the database file if it doesn't exist
@@ -66,7 +65,7 @@ func (db *DB) CreateUser(email string) (User, error) {
 		return User{}, err
 	}
 
-	id := len(dbStructure.Chirps) + 1
+	id := len(dbStructure.Users) + 1
 	user := User{
 		ID:    id,
 		Email: email,
@@ -202,10 +201,6 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 type CreateUserRequest struct {
 	Email string `json:"email"`
 }
-type CreateUserResponse struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
-}
 
 func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
@@ -226,7 +221,13 @@ func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Write the response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createdUser)
+
+	res := User{
+		ID:    createdUser.ID,
+		Email: createdUser.Email,
+	}
+
+	json.NewEncoder(w).Encode(res)
 }
 
 func (db *DB) GetChirpIDHandler(w http.ResponseWriter, r *http.Request) {
