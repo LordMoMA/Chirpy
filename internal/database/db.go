@@ -180,7 +180,7 @@ func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdChirp)
 }
 
-func (db *DB) Login(email, password string) (User, error) {
+func (db *DB) GetUserbyEmail(email string) (User, error) {
 
 	dbStructure, err := db.loadDB()
 	if err != nil {
@@ -188,7 +188,7 @@ func (db *DB) Login(email, password string) (User, error) {
 	}
 
 	for _, user := range dbStructure.Users {
-		if user.Email == email && user.Password == password {
+		if user.Email == email {
 			return user, nil
 		}
 	}
@@ -210,16 +210,28 @@ func (db *DB) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create the user
-	createdUser, err := db.Login(req.Email, req.Password)
+	createdUser, err := db.GetUserbyEmail(req.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Compare the hashed password with the password provided in the request
+	if err := bcrypt.CompareHashAndPassword([]byte(createdUser.Password), []byte(req.Password)); err != nil {
+		http.Error(w, "invalid password", http.StatusUnauthorized)
+		return
+	}
+
 	// Write the response
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(w).Encode(createdUser)
+	res := User{
+		ID:    createdUser.ID,
+		Email: createdUser.Email,
+	}
+
+	json.NewEncoder(w).Encode(res)
 }
 
 func (db *DB) CreateUser(email, password string) (User, error) {
@@ -227,6 +239,13 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	dbStructure, err := db.loadDB()
 	if err != nil {
 		return User{}, err
+	}
+
+	// Check if user with the same email already exists
+	for _, user := range dbStructure.Users {
+		if user.Email == email {
+			return User{}, fmt.Errorf("user with email %s already exists", email)
+		}
 	}
 
 	id := len(dbStructure.Users) + 1
@@ -237,9 +256,9 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	}
 
 	user := User{
-		ID:       id,
-		Email:    email,
-		Password: string(hashedPassword),
+		ID:    id,
+		Email: email,
+		// Password: string(hashedPassword),
 	}
 
 	dbStructure.Users[id] = user
@@ -249,13 +268,17 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	}
 
 	// Remove the password from the returned user
-	user.Password = ""
+	// user.Password = ""
 	return user, nil
 }
 
 type CreateUserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+type UserResponse struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
 }
 
 func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -281,7 +304,7 @@ func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	res := User{
+	res := UserResponse{
 		ID:    createdUser.ID,
 		Email: createdUser.Email,
 	}
