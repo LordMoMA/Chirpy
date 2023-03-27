@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/joho/godotenv"
 	"github.com/lordmoma/chirpy/internal/database"
 )
 
@@ -13,7 +14,7 @@ type apiConfig struct {
 }
 
 func main() {
-	// godotenv.Load()
+	godotenv.Load()
 	// // use flag package in Go to parse command line flags
 	// debug := flag.Bool("debug", false, "enable debugging") // create a boolean value for the --debug flag
 

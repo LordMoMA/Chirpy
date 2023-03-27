@@ -113,6 +113,7 @@ func (db *DB) ensureDB() error {
 
 	dbStructure := DBStructure{
 		Chirps: make(map[int]Chirp),
+		Users:  make(map[int]User),
 	}
 
 	if err := db.writeDB(dbStructure); err != nil {
