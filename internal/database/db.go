@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/cloudflare/cfssl/log"
 	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -218,6 +219,7 @@ func (db *DB) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Compare the hashed password with the password provided in the request
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		http.Error(w, "invalid password", http.StatusUnauthorized)
+		log.Error(err)
 		return
 	}
 
@@ -266,8 +268,6 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 		return User{}, err
 	}
 
-	// Remove the password from the returned user
-	// user.Password = ""
 	return user, nil
 }
 
