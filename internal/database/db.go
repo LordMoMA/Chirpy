@@ -217,6 +217,8 @@ func (db *DB) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Compare the hashed password with the password provided in the request
+	fmt.Printf("password: %s", req.Password)
+	fmt.Printf("hashed password: %s", user.Password)
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		http.Error(w, "invalid password", http.StatusUnauthorized)
 		log.Error(err)
@@ -255,6 +257,7 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
+	fmt.Printf("hashed password in CreateUser: %s", hashedPassword)
 
 	user := User{
 		ID:       id,
