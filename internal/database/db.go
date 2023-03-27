@@ -209,15 +209,15 @@ func (db *DB) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the user
-	createdUser, err := db.GetUserbyEmail(req.Email)
+	// get the user by email
+	user, err := db.GetUserbyEmail(req.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Compare the hashed password with the password provided in the request
-	if err := bcrypt.CompareHashAndPassword([]byte(createdUser.Password), []byte(req.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		http.Error(w, "invalid password", http.StatusUnauthorized)
 		return
 	}
@@ -227,8 +227,8 @@ func (db *DB) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	res := User{
-		ID:    createdUser.ID,
-		Email: createdUser.Email,
+		ID:    user.ID,
+		Email: user.Email,
 	}
 
 	json.NewEncoder(w).Encode(res)
@@ -256,9 +256,9 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	}
 
 	user := User{
-		ID:    id,
-		Email: email,
-		// Password: string(hashedPassword),
+		ID:       id,
+		Email:    email,
+		Password: string(hashedPassword),
 	}
 
 	dbStructure.Users[id] = user
