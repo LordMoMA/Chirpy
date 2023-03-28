@@ -2,34 +2,20 @@ package database
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"sort"
-	"strconv"
 	"sync"
-
-	"github.com/cloudflare/cfssl/log"
-	"github.com/go-chi/chi"
-	"golang.org/x/crypto/bcrypt"
 )
-
-// Chirp represents a single chirp message
-type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
-}
-type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
 
 // DB represents a database connection
 type DB struct {
 	path string
 	mux  *sync.RWMutex
+}
+type Chirp struct {
+	ID   int    `json:"id"`
+	Body string `json:"body"`
 }
 
 // DBStructure represents the structure of the database file
@@ -158,193 +144,4 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 		return err
 	}
 	return nil
-}
-
-func (db *DB) CreateChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the request body
-	var chirp Chirp
-	if err := json.NewDecoder(r.Body).Decode(&chirp); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Create the chirp
-	createdChirp, err := db.CreateChirp(chirp.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Write the response
-	w.Header().Set("Content-Type", "application/json")
-
-	json.NewEncoder(w).Encode(createdChirp)
-}
-
-func (db *DB) GetUserbyEmail(email string) (User, error) {
-
-	dbStructure, err := db.loadDB()
-	if err != nil {
-		return User{}, err
-	}
-
-	for _, user := range dbStructure.Users {
-		if user.Email == email {
-			return user, nil
-		}
-	}
-	return User{}, errors.New("User not found")
-}
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-func (db *DB) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the request body
-	var req LoginRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// get the user by email
-	user, err := db.GetUserbyEmail(req.Email)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Compare the hashed password with the password provided in the request
-	fmt.Printf("password: %s", req.Password)
-	fmt.Printf("hashed password: %s", user.Password)
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		http.Error(w, "invalid password", http.StatusUnauthorized)
-		log.Error(err)
-		return
-	}
-
-	// Write the response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	res := User{
-		ID:    user.ID,
-		Email: user.Email,
-	}
-
-	json.NewEncoder(w).Encode(res)
-}
-
-func (db *DB) CreateUser(email, password string) (User, error) {
-
-	dbStructure, err := db.loadDB()
-	if err != nil {
-		return User{}, err
-	}
-
-	// Check if user with the same email already exists
-	for _, user := range dbStructure.Users {
-		if user.Email == email {
-			return User{}, fmt.Errorf("user with email %s already exists", email)
-		}
-	}
-
-	id := len(dbStructure.Users) + 1
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return User{}, err
-	}
-	fmt.Printf("hashed password in CreateUser: %s", hashedPassword)
-
-	user := User{
-		ID:       id,
-		Email:    email,
-		Password: string(hashedPassword),
-	}
-
-	dbStructure.Users[id] = user
-
-	if err := db.writeDB(dbStructure); err != nil {
-		return User{}, err
-	}
-
-	return user, nil
-}
-
-type CreateUserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-type UserResponse struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
-}
-
-func (db *DB) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the request body
-	var req CreateUserRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Create the user
-	createdUser, err := db.CreateUser(req.Email, req.Password)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Write the response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	res := UserResponse{
-		ID:    createdUser.ID,
-		Email: createdUser.Email,
-	}
-
-	json.NewEncoder(w).Encode(res)
-}
-
-func (db *DB) GetChirpIDHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Invalid id", http.StatusBadRequest)
-		return
-	}
-	chirps, err := db.GetChirps()
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, chirps[id-1])
-}
-
-func (db *DB) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	chirps, err := db.GetChirps()
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	respondWithJSON(w, http.StatusOK, chirps)
-}
-
-func respondWithError(w http.ResponseWriter, status int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(map[string]string{"error": message})
-}
-
-func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(payload)
 }

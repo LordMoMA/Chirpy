@@ -1,8 +1,8 @@
-package main
+package handlers
 
 import "net/http"
 
-func healthzHandler(w http.ResponseWriter, r *http.Request) {
+func HealthzHandler(w http.ResponseWriter, r *http.Request) {
 	// Write the Content-Type header
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 

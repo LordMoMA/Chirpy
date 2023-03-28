@@ -7,11 +7,9 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
 	"github.com/lordmoma/chirpy/internal/database"
+	"github.com/lordmoma/chirpy/internal/handlers"
+	"github.com/lordmoma/chirpy/internal/middleware"
 )
-
-type apiConfig struct {
-	fileserverHits uint64
-}
 
 func main() {
 	godotenv.Load()
@@ -29,7 +27,7 @@ func main() {
 	const port = "8080"
 
 	// Create a new apiConfig struct to hold the request count
-	apiCfg := &apiConfig{}
+	apiCfg := &handlers.ApiConfig{}
 
 	// Create a new Database
 	db, err := database.NewDB("database.json")
@@ -42,18 +40,18 @@ func main() {
 
 	// Create a new router for the /api namespace
 	apiRouter := chi.NewRouter()
-	apiRouter.Get("/healthz", healthzHandler)
-	apiRouter.Post("/chirps", db.CreateChirpsHandler)
-	apiRouter.Get("/chirps", db.GetChirpsHandler)
-	apiRouter.Get("/chirps/{id}", db.GetChirpIDHandler)
+	apiRouter.Get("/healthz", handlers.HealthzHandler)
+	apiRouter.Post("/chirps", handlers.CreateChirpsHandler(db))
+	apiRouter.Get("/chirps", handlers.GetChirpsHandler(db))
+	apiRouter.Get("/chirps/{id}", handlers.GetChirpIDHandler(db))
 
 	// create users for /api namespaces
-	apiRouter.Post("/users", db.CreateUserHandler)
-	apiRouter.Post("/login", db.LoginHandler)
+	apiRouter.Post("/users", handlers.CreateUserHandler(db))
+	apiRouter.Post("/login", handlers.LoginHandler(db))
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()
-	adminRouter.Get("/metrics", apiCfg.metricsHandler)
+	adminRouter.Get("/metrics", handlers.MetricsHandler(apiCfg))
 
 	// Mount the apiRouter at /api in the main router
 	r := chi.NewRouter()
@@ -61,10 +59,10 @@ func main() {
 	r.Mount("/admin", adminRouter)
 
 	// Serve static files from the root directory and add the middleware to track metrics
-	r.Mount("/", apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot))))
+	r.Mount("/", middleware.MiddlewareMetricsInc(http.FileServer(http.Dir(filepathRoot)), apiCfg))
 
 	// Wrap the mux in a custom middleware function that adds CORS headers to the response
-	corsMux := middlewareCors(r)
+	corsMux := middleware.MiddlewareCors(r)
 
 	// Create a new http.Server and use the corsMux as the handler
 	srv := &http.Server{
