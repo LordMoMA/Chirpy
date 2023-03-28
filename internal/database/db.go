@@ -10,6 +10,7 @@ import (
 type DB struct {
 	path string
 	mux  *sync.RWMutex
+	// dbStructure DBStructure
 }
 type Chirp struct {
 	ID   int    `json:"id"`
@@ -41,6 +42,12 @@ func NewDB(path string) (*DB, error) {
 	if err := db.ensureDB(); err != nil {
 		return nil, err
 	}
+	// // Decode the JSON file into DBStructure
+	// err = json.NewDecoder(file).Decode(&db.dbStructure)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
 	return db, nil
 }
 
@@ -50,6 +57,7 @@ func (db *DB) ensureDB() error {
 	_, err := os.Stat(db.path)
 	if os.IsNotExist(err) {
 		// Create an empty database file
+
 		dbStructure := DBStructure{
 			Chirps: make(map[int]Chirp),
 			Users:  make(map[int]User),
@@ -93,9 +101,16 @@ func (db *DB) writeDB(dbStructure DBStructure) error {
 	}
 	defer file.Close()
 
-	err = json.NewEncoder(file).Encode(&dbStructure)
-	if err != nil {
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(&dbStructure); err != nil {
 		return err
 	}
+
+	// err = json.NewEncoder(file).Encode(&dbStructure)
+	// if err != nil {
+	// 	return err
+	// }
+
 	return nil
 }

@@ -19,6 +19,11 @@ import (
 
 func main() {
 	godotenv.Load()
+	jwtSecret := os.Getenv("JWT_SECRET")
+	apiCfg := &handlers.ApiConfig{
+		FileserverHits: 0,
+		JwtSecret:      jwtSecret,
+	}
 	// use flag package in Go to parse command line flags
 	debug := flag.Bool("debug", false, "enable debugging") // create a boolean value for the --debug flag
 
@@ -33,7 +38,7 @@ func main() {
 	const port = "8080"
 
 	// Create a new apiConfig struct to hold the request count
-	apiCfg := &handlers.ApiConfig{}
+	// apiCfg := &handlers.ApiConfig{}
 
 	// Create a new Database
 	db, err := database.NewDB("database.json")
@@ -54,6 +59,7 @@ func main() {
 
 	// create users for /api namespaces
 	apiRouter.Post("/users", handlers.CreateUserHandler(db))
+	apiRouter.Put("/users", handlers.CreateUserHandler(db))
 	apiRouter.Post("/login", handlers.LoginHandler(db))
 
 	// create a new router for the admin

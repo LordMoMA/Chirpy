@@ -12,6 +12,7 @@ import (
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Expire   int    `json:"expire"`
 }
 
 func LoginHandler(db *database.DB) http.HandlerFunc {

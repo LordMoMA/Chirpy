@@ -8,6 +8,7 @@ import (
 
 type ApiConfig struct {
 	FileserverHits uint64
+	JwtSecret      string
 }
 
 func MetricsHandler(cfg *ApiConfig) http.HandlerFunc {
