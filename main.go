@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
@@ -32,9 +35,6 @@ func main() {
 	// Create a new apiConfig struct to hold the request count
 	apiCfg := &handlers.ApiConfig{}
 
-	// Remove the local database file on server exit
-	defer os.Remove("database.json")
-
 	// Create a new Database
 	db, err := database.NewDB("database.json")
 	if err != nil {
@@ -43,6 +43,7 @@ func main() {
 	if db == nil {
 		panic("Failed to open database file")
 	}
+	defer os.Remove("database.json")
 
 	// Create a new router for the /api namespace
 	apiRouter := chi.NewRouter()
@@ -81,5 +82,17 @@ func main() {
 	// log.Fatal(srv.ListenAndServe())
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
+	}
+
+	// Set up an operating system signal handler to capture the Ctrl+C signal
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	// Wait for the signal
+	<-signalChan
+
+	// Shutdown the server gracefully
+	if err := srv.Shutdown(context.Background()); err != nil {
+		fmt.Println(err)
 	}
 }
