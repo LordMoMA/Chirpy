@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,7 +25,7 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-func LoginHandler(db *database.DB) http.HandlerFunc {
+func LoginHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parse the request body
 		var req LoginRequest
@@ -50,7 +51,8 @@ func LoginHandler(db *database.DB) http.HandlerFunc {
 		}
 
 		// Create the JWT token
-		apiCfg := &ApiConfig{}
+
+		fmt.Printf("JWT_SECRET-2: %s\n", apiCfg.JwtSecret)
 		// jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 		if len(apiCfg.JwtSecret) == 0 {
 			http.Error(w, "JWT_SECRET not set", http.StatusInternalServerError)
@@ -78,7 +80,7 @@ func LoginHandler(db *database.DB) http.HandlerFunc {
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		signedToken, err := token.SignedString(apiCfg.JwtSecret)
+		signedToken, err := token.SignedString([]byte(apiCfg.JwtSecret))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

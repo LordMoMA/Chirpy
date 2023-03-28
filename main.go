@@ -64,7 +64,7 @@ func main() {
 	// create users for /api namespaces
 	apiRouter.Post("/users", handlers.CreateUserHandler(db))
 	apiRouter.Put("/users", handlers.CreateUserHandler(db))
-	apiRouter.Post("/login", handlers.LoginHandler(db))
+	apiRouter.Post("/login", handlers.LoginHandler(db, apiCfg))
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()
