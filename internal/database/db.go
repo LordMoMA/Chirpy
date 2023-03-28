@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"sync"
 )
@@ -42,26 +41,23 @@ func NewDB(path string) (*DB, error) {
 	if err := db.ensureDB(); err != nil {
 		return nil, err
 	}
-	fmt.Println("calling NewDB()... 📚")
 	return db, nil
 }
 
 // ensureDB creates a new database file if it doesn't exist
 func (db *DB) ensureDB() error {
-	if _, err := os.Stat(db.path); err == nil {
-		fmt.Printf("database file found at path %s\n", db.path)
-		return nil
-	} else if !os.IsNotExist(err) {
-		return err
-	}
+	// Check if the database file exists
+	_, err := os.Stat(db.path)
+	if os.IsNotExist(err) {
+		// Create an empty database file
+		dbStructure := DBStructure{
+			Chirps: make(map[int]Chirp),
+			Users:  make(map[int]User),
+		}
 
-	dbStructure := DBStructure{
-		Chirps: make(map[int]Chirp),
-		Users:  make(map[int]User),
-	}
-
-	if err := db.writeDB(dbStructure); err != nil {
-		return err
+		if err := db.writeDB(dbStructure); err != nil {
+			return err
+		}
 	}
 	return nil
 }
