@@ -18,12 +18,16 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	jwtSecret := os.Getenv("JWT_SECRET")
 	apiCfg := &handlers.ApiConfig{
 		FileserverHits: 0,
 		JwtSecret:      jwtSecret,
 	}
+	fmt.Printf("JWT_SECRET: %s\n", apiCfg.JwtSecret)
 	// use flag package in Go to parse command line flags
 	debug := flag.Bool("debug", false, "enable debugging") // create a boolean value for the --debug flag
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func validateHandler(cfg *ApiConfig) http.HandlerFunc {
+func ValidateHandler(cfg *ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var chirp struct {
 			Body string `json:"body"`
