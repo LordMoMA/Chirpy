@@ -91,7 +91,7 @@ func main() {
 	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
 	// log.Fatal(srv.ListenAndServe())
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		panic(err)
+		log.Println("ListenAndServe:", err)
 	}
 
 	// Set up an operating system signal handler to capture the Ctrl+C signal
