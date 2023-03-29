@@ -64,3 +64,27 @@ func (db *DB) GetUserbyEmail(email string) (User, error) {
 	}
 	return User{}, errors.New("User not found")
 }
+
+func (db *DB) UpdateUser(userID int, email, password string) error {
+	user, err := db.GetUser(userID)
+	if err != nil {
+		return err
+	}
+	user.Email = email
+	user.Password = password
+	return nil
+}
+
+func (db *DB) GetUser(userID int) (User, error) {
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return User{}, err
+	}
+
+	for _, user := range dbStructure.Users {
+		if user.ID == userID {
+			return user, nil
+		}
+	}
+	return User{}, errors.New("User not found")
+}

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -52,7 +51,7 @@ func LoginHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 
 		// Create the JWT token
 
-		fmt.Printf("JWT_SECRET-2: %s\n", apiCfg.JwtSecret)
+		// fmt.Printf("JWT_SECRET-2: %s\n", apiCfg.JwtSecret)
 		// jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 		if len(apiCfg.JwtSecret) == 0 {
 			http.Error(w, "JWT_SECRET not set", http.StatusInternalServerError)
