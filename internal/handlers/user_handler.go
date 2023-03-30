@@ -121,10 +121,13 @@ func UpdateUserHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 			return
 		}
 
+		user.Password = req.Password
+		user.Email = req.Email
+
 		// Return updated user
 		updatedUser := CreateUserRequest{
-			Email:    user.Email,
-			Password: user.Password,
+			Email:    req.Email,
+			Password: req.Password,
 		}
 
 		// Return the updated user object
