@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cloudflare/cfssl/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -65,14 +66,40 @@ func (db *DB) GetUserbyEmail(email string) (User, error) {
 	return User{}, errors.New("User not found")
 }
 
-func (db *DB) UpdateUser(userID int, email, password string) error {
+// func (db *DB) UpdateUser(userID int, email, password string) (User, error) {
+// 	user, err := db.GetUser(userID)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
+
+// 	user.Email = email
+// 	user.Password = password
+
+//		return user, nil
+//	}
+func (db *DB) UpdateUser(userID int, email, password string, dbStructure *DBStructure) (User, error) {
+	// Load the current JSON data from the database file
 	user, err := db.GetUser(userID)
 	if err != nil {
-		return err
+		log.Error(err)
 	}
+
+	index := user.ID
+
+	// Replace the user at that index with the updated user
 	user.Email = email
 	user.Password = password
-	return nil
+	// Save the modified dbStructure to the database file
+	dbStructure.Users[index] = user
+
+	fmt.Printf("dbStructure: %v", dbStructure)
+
+	err = db.writeDB(*dbStructure)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return user, nil
 }
 
 func (db *DB) GetUser(userID int) (User, error) {

@@ -21,6 +21,10 @@ type UserResponse struct {
 	Email string `json:"email"`
 }
 
+// type updateResponse struct {
+// 	Email string `json:"email"`
+// }
+
 func CreateUserHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parse the request body
@@ -108,29 +112,25 @@ func UpdateUserHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 		}
 
 		// Update the user in the database
-		err = db.UpdateUser(userID, req.Email, req.Password)
+		updatedUser, err := db.UpdateUser(userID, req.Email, req.Password, &database.DBStructure{})
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+		fmt.Printf("updated user: %v\n", updatedUser)
+		// Write the response
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
 
-		// Get updated user from database
-		user, err := db.GetUser(userID)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		res := UserResponse{
+			ID:    updatedUser.ID,
+			Email: updatedUser.Email,
 		}
 
-		user.Password = req.Password
-		user.Email = req.Email
-
-		// Return updated user
-		updatedUser := CreateUserRequest{
-			Email:    req.Email,
-			Password: req.Password,
-		}
-
+		json.NewEncoder(w).Encode(res)
 		// Return the updated user object
-		respondWithJSON(w, http.StatusOK, updatedUser)
+		// respondWithJSON(w, http.StatusOK, res)
+
+		//
 	}
 }
