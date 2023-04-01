@@ -112,7 +112,7 @@ func UpdateUserHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 		}
 
 		// Update the user in the database
-		updatedUser, err := db.UpdateUser(userID, req.Email, req.Password)
+		updatedUser, err := db.UpdateUser(userID, req.Email, req.Password, &database.DBStructure{})
 		if err != nil {
 			fmt.Printf("error updating user: %v", err)
 			respondWithError(w, http.StatusInternalServerError, err.Error())
