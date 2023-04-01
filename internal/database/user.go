@@ -34,7 +34,7 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
-	fmt.Printf("hashed password in CreateUser: %s", hashedPassword)
+	// fmt.Printf("hashed password in CreateUser: %s", hashedPassword)
 
 	user := User{
 		ID:       id,
@@ -66,19 +66,7 @@ func (db *DB) GetUserbyEmail(email string) (User, error) {
 	return User{}, errors.New("User not found")
 }
 
-// func (db *DB) UpdateUser(userID int, email, password string) (User, error) {
-// 	user, err := db.GetUser(userID)
-// 	if err != nil {
-// 		log.Error(err)
-// 	}
-
-// 	user.Email = email
-// 	user.Password = password
-
-// 	return user, nil
-// }
-
-func (db *DB) UpdateUser(userID int, email, password string, dbStructure *DBStructure) (User, error) {
+func (db *DB) UpdateUser(userID int, email, password string) (User, error) {
 	// Load the current JSON data from the database file
 	user, err := db.GetUser(userID)
 	if err != nil {
@@ -86,16 +74,23 @@ func (db *DB) UpdateUser(userID int, email, password string, dbStructure *DBStru
 	}
 
 	index := user.ID
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return User{}, err
+	}
+	
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return User{}, err
+	}
 
 	// Replace the user at that index with the updated user
 	user.Email = email
-	user.Password = password
-	// Save the modified dbStructure to the database file
+	user.Password = string(hashedPassword)
 	dbStructure.Users[index] = user
 
-	fmt.Printf("dbStructure: %v", dbStructure)
 
-	err = db.writeDB(*dbStructure)
+	err = db.writeDB(dbStructure)
 	if err != nil {
 		log.Error(err)
 	}
