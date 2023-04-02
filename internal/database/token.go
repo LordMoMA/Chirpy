@@ -20,13 +20,12 @@ func (db *DB) RevokeToken(tokenID string, revokedAt time.Time) (RevokedToken,err
 		RevokedAt: revokedAt,
 	}
 
-	for k, v := range dbStructure.Tokens {
-		if v.ID == tokenID {
-			dbStructure.Tokens[k] = token
-			if err := db.writeDB(dbStructure); err != nil {
-				return token, err
-			}
-		}
+	id := len(dbStructure.Tokens) + 1
+	dbStructure.Tokens[id] = token
+
+	if err := db.writeDB(dbStructure); err != nil {
+		return RevokedToken{}, err
 	}
+
 	return token, nil
 }
