@@ -69,6 +69,9 @@ func main() {
 	// create access token with refresh token for /api namespaces
 	apiRouter.Post("/refresh", handlers.AccessTokenHandler(db, apiCfg))
 
+	// revoke the access token for /api namespaces
+	apiRouter.Post("/revoke", handlers.RevokeTokenHandler(db, apiCfg))
+
 
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()

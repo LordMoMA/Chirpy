@@ -4,6 +4,11 @@ import (
 	"sort"
 )
 
+type Chirp struct {
+	ID   int    `json:"id"`
+	Body string `json:"body"`
+}
+
 // CreateChirp creates a new chirp and saves it to disk
 func (db *DB) CreateChirp(body string) (Chirp, error) {
 

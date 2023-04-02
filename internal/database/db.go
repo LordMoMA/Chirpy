@@ -12,15 +12,12 @@ type DB struct {
 	mux  *sync.RWMutex
 	// dbStructure DBStructure
 }
-type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
-}
 
 // DBStructure represents the structure of the database file
 type DBStructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
 	Users  map[int]User  `json:"users"`
+	Tokens  map[int]RevokedToken  `json:"revoked_tokens"`
 }
 
 // NewDB creates a new database connection and creates the database file if it doesn't exist
