@@ -15,13 +15,14 @@ import (
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	Expire   int    `json:"expires_in_seconds"`
+	// Expire   int    `json:"expires_in_seconds"`
 }
 
 type LoginResponse struct {
 	ID    int    `json:"id"`
 	Email string `json:"email"`
-	Token string `json:"token"`
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func LoginHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
@@ -56,28 +57,35 @@ func LoginHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 			return
 		}
 
-		var expirationTime time.Duration
+		// Set expiration time for access token
+		accessTokenExpirationTime := time.Now().Add(1 * time.Hour)
 
-		expiresInSeconds, err := strconv.Atoi(r.FormValue("expires_in_seconds"))
-		if err == nil {
-			if expiresInSeconds > 86400 {
-				expirationTime = 86400 * time.Second
-			} else {
-				expirationTime = time.Duration(expiresInSeconds) * time.Second
-			}
-		} else {
-			expirationTime = 24 * time.Hour
-		}
+		// Set expiration time for refresh token
+		refreshTokenExpirationTime := time.Now().Add(60 * 24 * time.Hour)
 
-		claims := jwt.RegisteredClaims{
-			Issuer:    "chirpy",
+		accessTokenClaims := jwt.RegisteredClaims{
+			Issuer:    "chirpy-access",
 			Subject:   strconv.Itoa(user.ID),
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(expirationTime)),
+			ExpiresAt: jwt.NewNumericDate(accessTokenExpirationTime.UTC()),
 		}
 
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		signedToken, err := token.SignedString([]byte(apiCfg.JwtSecret))
+		accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
+		accessTokenString, err := accessToken.SignedString([]byte(apiCfg.JwtSecret))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		refreshTokenClaims := jwt.RegisteredClaims{
+			Issuer:    "chirpy-refresh",
+			Subject:   strconv.Itoa(user.ID),
+			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
+			ExpiresAt: jwt.NewNumericDate(refreshTokenExpirationTime.UTC()),
+		}
+
+		refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
+		refreshTokenString, err := refreshToken.SignedString([]byte(apiCfg.JwtSecret))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -88,11 +96,11 @@ func LoginHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 
 		res := LoginResponse{
-			ID:    user.ID,
-			Email: user.Email,
-			Token: signedToken,
+			ID:           user.ID,
+			Email:        user.Email,
+			AccessToken:  accessTokenString,
+			RefreshToken: refreshTokenString,
 		}
-
 		json.NewEncoder(w).Encode(res)
 	}
 }

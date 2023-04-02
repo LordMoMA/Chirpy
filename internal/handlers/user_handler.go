@@ -65,11 +65,8 @@ func UpdateUserHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 			return
 		}
 
-		// fmt.Printf("authHeader: %s \n", authHeader)
 		//tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
-		// fmt.Printf("token string: %s\n", tokenString)
 
 		// Parse and validate the token
 		token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -129,9 +126,5 @@ func UpdateUserHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode(res)
-		// Return the updated user object
-		// respondWithJSON(w, http.StatusOK, res)
-
-		//
 	}
 }
