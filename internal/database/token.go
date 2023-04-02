@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"time"
 )
 
@@ -10,10 +9,10 @@ type RevokedToken struct {
 	RevokedAt time.Time `json:"revoked_at"`
 }
 
-func (db *DB) RevokeToken(tokenID string, revokedAt time.Time) (RevokedToken, error) {
+func (db *DB) RevokeToken(tokenID string, revokedAt time.Time) (RevokedToken,error) {
 	dbStructure, err := db.loadDB()
 	if err != nil {
-		return RevokedToken{}, err
+		return RevokedToken{},err
 	}
 	
 	token := RevokedToken{
@@ -25,10 +24,9 @@ func (db *DB) RevokeToken(tokenID string, revokedAt time.Time) (RevokedToken, er
 		if v.ID == tokenID {
 			dbStructure.Tokens[k] = token
 			if err := db.writeDB(dbStructure); err != nil {
-				return RevokedToken{}, err
+				return token, err
 			}
-			return token, nil
 		}
 	}
-	return RevokedToken{}, errors.New("token not found")
+	return token, nil
 }

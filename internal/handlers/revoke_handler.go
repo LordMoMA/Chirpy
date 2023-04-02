@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -10,7 +11,10 @@ import (
 	"github.com/lordmoma/chirpy/internal/database"
 )
 
-
+type RevokeResponse struct {
+	ID       string    `json:"id"`
+	RevokedAt time.Time `json:"revoked_at"`
+}
 
 func RevokeTokenHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +38,7 @@ func RevokeTokenHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 			return []byte(apiCfg.JwtSecret), nil
 		})
 		if err != nil {
-			fmt.Printf("token error: %v", err)
+			// fmt.Printf("token error: %v", err)
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
@@ -54,11 +58,15 @@ func RevokeTokenHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 		token.Valid = false
 		
 		// store the token string and revoke time in the database
-		db.RevokeToken(tokenString, time.Now().UTC())
+		currentTime := time.Now().UTC()
+		
+		revokedToken, err := db.RevokeToken(tokenString, currentTime) 
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
 		// Respond with a 200 status code
 		w.WriteHeader(http.StatusOK)
-
-		
+		json.NewEncoder(w).Encode(revokedToken)
 	}
 }
