@@ -56,10 +56,11 @@ func RevokeTokenHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 
 		// Revoke the refresh token
 		token.Valid = false
+		fmt.Printf("token valid: %v", token.Valid)
 		
 		// store the token string and revoke time in the database
 		currentTime := time.Now().UTC()
-		
+
 		revokedToken, err := db.RevokeToken(tokenString, currentTime) 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
