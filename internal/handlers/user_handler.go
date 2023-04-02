@@ -94,6 +94,12 @@ func UpdateUserHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
 			return
 		}
 
+		// Check if the token is a refresh token
+		if claims.Issuer == "chirpy-refresh" {
+			http.Error(w, "Invalid token: Refresh Token Rejected", http.StatusUnauthorized)
+			return
+		}
+
 		// Extract the user ID from the token
 		userID, err := strconv.Atoi(claims.Subject)
 		if err != nil {
