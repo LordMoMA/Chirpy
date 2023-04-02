@@ -66,6 +66,10 @@ func main() {
 	apiRouter.Put("/users", handlers.UpdateUserHandler(db, apiCfg))
 	apiRouter.Post("/login", handlers.LoginHandler(db, apiCfg))
 
+	// create access token with refresh token for /api namespaces
+	apiRouter.Post("/refresh", handlers.AccessTokenHandler(db, apiCfg))
+
+
 	// create a new router for the admin
 	adminRouter := chi.NewRouter()
 	adminRouter.Get("/metrics", handlers.MetricsHandler(apiCfg))
