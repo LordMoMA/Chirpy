@@ -16,6 +16,10 @@ type WebhookRequest struct {
 	} `json:"data"`
 }
 
+type WebhookResponse struct {
+	Membership bool `json:"is_chirpy_red"`
+}
+
 func WebhookHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
 		var req WebhookRequest
@@ -36,11 +40,14 @@ func WebhookHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc{
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
 
-		
+		res := WebhookResponse{
+			Membership: user.Membership,
+		}
 
-		
-
+		json.NewEncoder(w).Encode(res)
 
 	}
 }

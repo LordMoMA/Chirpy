@@ -122,7 +122,7 @@ func UpdateUserHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFu
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		fmt.Printf("updated user: %v\n", updatedUser)
+		// fmt.Printf("updated user: %v\n", updatedUser)
 		// Write the response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)

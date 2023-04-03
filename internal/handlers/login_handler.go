@@ -24,6 +24,7 @@ type LoginResponse struct {
 	Email string `json:"email"`
 	AccessToken string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+	Membership bool `json:"is_chirpy_red"`
 }
 
 func LoginHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc {
@@ -95,6 +96,7 @@ func LoginHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc {
 			Email:        user.Email,
 			AccessToken:  accessTokenString,
 			RefreshToken: refreshTokenString,
+			Membership:   user.Membership,
 		}
 		json.NewEncoder(w).Encode(res)
 	}
