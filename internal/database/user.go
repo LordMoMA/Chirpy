@@ -113,3 +113,29 @@ func (db *DB) GetUser(userID int) (User, error) {
 	}
 	return User{}, errors.New("User not found")
 }
+
+func (db *DB) UpdateMembership(userID int, membership bool) (User, error) {
+	// Load the current JSON data from the database file
+	user, err := db.GetUser(userID)
+	if err != nil {
+		log.Error(err)
+	}
+
+	index := user.ID
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return User{}, err
+	}
+
+	user.Membership = membership
+	dbStructure.Users[index] = user
+
+	err = db.writeDB(dbStructure)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return user, nil
+}
+
+

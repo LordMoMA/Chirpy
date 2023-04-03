@@ -8,12 +8,7 @@ import (
 	"github.com/lordmoma/chirpy/internal/database"
 )
 
-// {
-// 	"event": "user.upgraded",
-// 	"data": {
-// 	  "user_id": 3
-// 	}
-//   }
+
 type WebhookRequest struct {
 	Event string `json:"event"`
 	Data  struct {
@@ -31,7 +26,21 @@ func WebhookHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc{
 		}
 
 		if req.Event != "user.upgraded" {
-			w.Header(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 		}
+
+		// get the users from db
+		user, err := db.UpdateMembership(req.Data.UserID, true)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+
+		
+
+		
+
+
 	}
 }
