@@ -63,7 +63,6 @@ func main() {
 	apiRouter.Get("/chirps/{id}", handlers.GetChirpIDHandler(db))
 	apiRouter.Delete("/chirps/{id}", handlers.DeleteChirpIDHandler(db, apiCfg))
 
-
 	// create users for /api namespaces
 	apiRouter.Post("/users", handlers.CreateUserHandler(db))
 	apiRouter.Put("/users", handlers.UpdateUserHandler(db, apiCfg))
@@ -74,6 +73,9 @@ func main() {
 
 	// revoke the access token for /api namespaces
 	apiRouter.Post("/revoke", handlers.RevokeTokenHandler(db, apiCfg))
+
+	// create a webhook for /api namespaces
+	apiRouter.Post("polka/webhooks", handlers.WebhookHandler(db, apiCfg))
 
 
 	// create a new router for the admin

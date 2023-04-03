@@ -76,5 +76,4 @@ func (db *DB) DeleteChirp(authorID, id int) error {
 	}
 
 	return nil
-
 }

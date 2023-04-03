@@ -12,6 +12,7 @@ type User struct {
 	ID       int    `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Membership bool `json:"is_chirpy_red"`
 }
 
 func (db *DB) CreateUser(email, password string) (User, error) {
@@ -40,6 +41,7 @@ func (db *DB) CreateUser(email, password string) (User, error) {
 		ID:       id,
 		Email:    email,
 		Password: string(hashedPassword),
+		Membership: false,
 	}
 
 	dbStructure.Users[id] = user
