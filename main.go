@@ -75,7 +75,7 @@ func main() {
 	apiRouter.Post("/revoke", handlers.RevokeTokenHandler(db, apiCfg))
 
 	// create a webhook for /api namespaces
-	apiRouter.Post("polka/webhooks", handlers.WebhookHandler(db, apiCfg))
+	apiRouter.Post("/polka/webhooks", handlers.WebhookHandler(db, apiCfg))
 
 
 	// create a new router for the admin
