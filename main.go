@@ -61,6 +61,8 @@ func main() {
 	apiRouter.Post("/chirps", handlers.CreateChirpsHandler(db, apiCfg))
 	apiRouter.Get("/chirps", handlers.GetChirpsHandler(db))
 	apiRouter.Get("/chirps/{id}", handlers.GetChirpIDHandler(db))
+	apiRouter.Delete("/chirps/{id}", handlers.DeleteChirpIDHandler(db, apiCfg))
+
 
 	// create users for /api namespaces
 	apiRouter.Post("/users", handlers.CreateUserHandler(db))

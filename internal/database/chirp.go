@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"sort"
 )
 
@@ -51,4 +52,29 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 	})
 
 	return chirps, nil
+}
+
+func (db *DB) DeleteChirp(authorID, id int) error {
+
+	dbStructure, err := db.loadDB()
+	if err != nil {
+		return err
+	}
+
+	if _, ok := dbStructure.Chirps[id]; !ok {
+		return errors.New("chirp not found")
+	}
+
+	if dbStructure.Chirps[id].AuthorID != authorID {
+		return errors.New("unauthorised to delete a chirp")
+	}
+
+	delete(dbStructure.Chirps, id)
+
+	if err := db.writeDB(dbStructure); err != nil {
+		return err
+	}
+
+	return nil
+
 }

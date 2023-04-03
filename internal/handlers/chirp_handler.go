@@ -112,6 +112,63 @@ func GetChirpsHandler(db *database.DB) http.HandlerFunc {
 	}
 }
 
+func DeleteChirpIDHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "Invalid id", http.StatusBadRequest)
+			return
+		}
+
+		//Get the authorID from JWT header
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
+			return
+		}
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(apiCfg.JwtSecret), nil
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		if !token.Valid {
+			http.Error(w, "Invalid token, please refresh after it is invalid", http.StatusUnauthorized)
+			return
+		}
+
+		claims, ok := token.Claims.(*jwt.RegisteredClaims)
+		
+		if claims.Issuer != "chirpy-access" {
+			http.Error(w, "Invalid token: Must be a Access Token, please refresh after it is invalid", http.StatusUnauthorized)
+			return
+		}
+		
+		if !ok || claims.ExpiresAt == nil || claims.ExpiresAt.Before(time.Now().UTC()) {
+			http.Error(w, "Refresh Token has been revoked!", http.StatusUnauthorized)
+			return
+		}
+
+		authorID, err := strconv.Atoi(claims.Subject)
+		if err != nil {
+			return 
+		}
+
+		err = db.DeleteChirp(authorID, id)
+		if err != nil {
+			return 
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func respondWithError(w http.ResponseWriter, status int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
