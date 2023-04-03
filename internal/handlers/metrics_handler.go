@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/lordmoma/chirpy/internal/config"
 )
 
-type ApiConfig struct {
-	FileserverHits uint64
-	JwtSecret      string
-}
 
-func MetricsHandler(cfg *ApiConfig) http.HandlerFunc {
+func MetricsHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Load the current request count
 		hits := atomic.LoadUint64(&cfg.FileserverHits)

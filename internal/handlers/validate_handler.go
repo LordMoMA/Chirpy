@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/lordmoma/chirpy/internal/config"
 )
 
-func ValidateHandler(cfg *ApiConfig) http.HandlerFunc {
+func ValidateHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var chirp struct {
 			Body string `json:"body"`

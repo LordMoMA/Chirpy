@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/lordmoma/chirpy/internal/config"
 	"github.com/lordmoma/chirpy/internal/database"
 )
 
@@ -18,8 +19,9 @@ func CreateChirpsHandler(db *database.DB) http.HandlerFunc {
 			return
 		}
 
-		// Create the chirp
-		createdChirp, err := db.CreateChirp(chirp.Body)
+		apiConfig := &config.ApiConfig{}
+		
+		createdChirp, err := db.CreateChirp(r, apiConfig, chirp.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

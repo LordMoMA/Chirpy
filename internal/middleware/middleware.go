@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"sync/atomic"
 
-	"github.com/lordmoma/chirpy/internal/handlers"
+	"github.com/lordmoma/chirpy/internal/config"
 )
 
-func MiddlewareMetricsInc(next http.Handler, cfg *handlers.ApiConfig) http.Handler {
+func MiddlewareMetricsInc(next http.Handler, cfg *config.ApiConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Increment the request count
 		atomic.AddUint64(&cfg.FileserverHits, 1)

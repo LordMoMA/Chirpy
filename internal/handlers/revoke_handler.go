@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/lordmoma/chirpy/internal/config"
 	"github.com/lordmoma/chirpy/internal/database"
 )
 
@@ -16,7 +17,7 @@ type RevokeResponse struct {
 	RevokedAt time.Time `json:"revoked_at"`
 }
 
-func RevokeTokenHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
+func RevokeTokenHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract the token from the headers
 		authHeader := r.Header.Get("Authorization")

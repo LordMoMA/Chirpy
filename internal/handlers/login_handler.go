@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudflare/cfssl/log"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/lordmoma/chirpy/internal/config"
 	"github.com/lordmoma/chirpy/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -25,7 +26,7 @@ type LoginResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func LoginHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
+func LoginHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parse the request body
 		var req LoginRequest

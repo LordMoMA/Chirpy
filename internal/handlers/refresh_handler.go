@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/lordmoma/chirpy/internal/config"
 	"github.com/lordmoma/chirpy/internal/database"
 )
 
@@ -15,7 +16,7 @@ type RefreshResponse struct {
 	Token string `json:"token"`
 }
 
-func AccessTokenHandler(db *database.DB, apiCfg *ApiConfig) http.HandlerFunc {
+func AccessTokenHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract the token from the headers
 		authHeader := r.Header.Get("Authorization")

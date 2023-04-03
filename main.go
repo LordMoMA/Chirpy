@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
+	"github.com/lordmoma/chirpy/internal/config"
 	"github.com/lordmoma/chirpy/internal/database"
 	"github.com/lordmoma/chirpy/internal/handlers"
 	"github.com/lordmoma/chirpy/internal/middleware"
@@ -23,7 +24,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	jwtSecret := os.Getenv("JWT_SECRET")
-	apiCfg := &handlers.ApiConfig{
+	apiCfg := &config.ApiConfig{
 		FileserverHits: 0,
 		JwtSecret:      jwtSecret,
 	}
@@ -42,7 +43,7 @@ func main() {
 	const port = "8080"
 
 	// Create a new apiConfig struct to hold the request count
-	// apiCfg := &handlers.ApiConfig{}
+	// apiCfg := &config.ApiConfig{}
 
 	// Create a new Database
 	db, err := database.NewDB("database.json")
