@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/lordmoma/chirpy/internal/config"
 	"github.com/lordmoma/chirpy/internal/database"
@@ -22,6 +23,20 @@ type WebhookResponse struct {
 
 func WebhookHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
+		
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
+			return
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "ApiKey ")
+
+		if tokenString != apiCfg.APIKey {
+			http.Error(w, "Invalid API key", http.StatusUnauthorized)
+			return
+		}
+
 		var req WebhookRequest
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

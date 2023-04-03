@@ -24,11 +24,14 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	jwtSecret := os.Getenv("JWT_SECRET")
+	apikey := os.Getenv("APIKey")
+
 	apiCfg := &config.ApiConfig{
 		FileserverHits: 0,
 		JwtSecret:      jwtSecret,
+		APIKey: 	   apikey,
 	}
-	fmt.Printf("JWT_SECRET: %s\n", apiCfg.JwtSecret)
+	// fmt.Printf("JWT_SECRET: %s\n", apiCfg.JwtSecret)
 	// use flag package in Go to parse command line flags
 	debug := flag.Bool("debug", false, "enable debugging") // create a boolean value for the --debug flag
 
