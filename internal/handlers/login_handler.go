@@ -35,32 +35,26 @@ func LoginHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		// get the user by email
 		user, err := db.GetUserbyEmail(req.Email)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		// Compare the hashed password with the password provided in the request
-
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 			http.Error(w, "invalid password", http.StatusUnauthorized)
 			log.Error(err)
 			return
 		}
-
 		// Create the JWT token
 		// jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 		if len(apiCfg.JwtSecret) == 0 {
 			http.Error(w, "JWT_SECRET not set", http.StatusInternalServerError)
 			return
 		}
-
 		// Set expiration time for access token
 		accessTokenExpirationTime := time.Now().Add(1 * time.Hour)
-
 		// Set expiration time for refresh token
 		refreshTokenExpirationTime := time.Now().Add(60 * 24 * time.Hour)
 

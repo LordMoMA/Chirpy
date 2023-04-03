@@ -58,7 +58,7 @@ func main() {
 	// Create a new router for the /api namespace
 	apiRouter := chi.NewRouter()
 	apiRouter.Get("/healthz", handlers.HealthzHandler)
-	apiRouter.Post("/chirps", handlers.CreateChirpsHandler(db))
+	apiRouter.Post("/chirps", handlers.CreateChirpsHandler(db, apiCfg))
 	apiRouter.Get("/chirps", handlers.GetChirpsHandler(db))
 	apiRouter.Get("/chirps/{id}", handlers.GetChirpIDHandler(db))
 
