@@ -4,7 +4,7 @@ Practice REST API design and server building abilities in Go
 
 ## Steps
 
-I published each step of process in Medium, and it'll be easier to follow along this project with the articles:
+I published each step of my design process in Medium, and it'll be helpful to follow along the details of this project with the articles if you want to know the process:
 
 1. [REST APIs Design and Server Building in Go(1-Servers)](https://medium.com/@lordmoma/build-a-social-network-in-go-1-servers-bd3a7b74219a)
 2. [REST APIs Design and Server Building in Go(2-Routing)](https://medium.com/@lordmoma/build-a-social-network-in-go-2-routing-c6de91e6b1a8)
