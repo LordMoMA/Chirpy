@@ -108,7 +108,15 @@ func GetChirpsHandler(db *database.DB) http.HandlerFunc {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		respondWithJSON(w, http.StatusOK, chirps)
+		s := r.URL.Query().Get("author_id")
+		for _, chirp := range chirps {
+			if s == strconv.Itoa(chirp.AuthorID) {
+				respondWithJSON(w, http.StatusOK, chirp)
+			} else{
+				fmt.Println("No author_id found")
+				return
+			}
+		}
 	}
 }
 

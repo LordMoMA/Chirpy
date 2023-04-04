@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -23,16 +24,17 @@ type WebhookResponse struct {
 
 func WebhookHandler(db *database.DB, apiCfg *config.ApiConfig) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-		
+		fmt.Printf("http request: %v", r)
 		authHeader := r.Header.Get("Authorization")
+		fmt.Printf("authoHeader: %v", authHeader)
 		if authHeader == "" {
 			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "ApiKey ")
+		apiString := strings.TrimPrefix(authHeader, "ApiKey ")
 
-		if tokenString != apiCfg.APIKey {
+		if apiString != apiCfg.APIKey {
 			http.Error(w, "Invalid API key", http.StatusUnauthorized)
 			return
 		}
