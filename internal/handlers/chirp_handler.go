@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -108,15 +109,28 @@ func GetChirpsHandler(db *database.DB) http.HandlerFunc {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		s := r.URL.Query().Get("author_id")
+
+		a := r.URL.Query().Get("author_id")
+		s := r.URL.Query().Get("sort")
+
 		var result []database.Chirp
 		for _, chirp := range chirps {
-			if s == strconv.Itoa(chirp.AuthorID) {
+			if a == strconv.Itoa(chirp.AuthorID) {
 				result = append(result, chirp)
 			} 
 		}
 		if len(result) == 0 {
 			result = chirps
+		}
+
+		if s == "asc" {
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].ID < result[j].ID
+			})
+		}; if s == "desc" {
+			sort.Slice(result, func(i, j int) bool {
+				return result[i].ID > result[j].ID
+			})
 		}
 		respondWithJSON(w, http.StatusOK, result)
 	}
