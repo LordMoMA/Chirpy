@@ -15,3 +15,17 @@ I published each step of process in Medium, and it'll be easier to follow along 
 7. [REST APIs Design and Server Building in Go(7-Authorization)](https://medium.com/@lordmoma/build-a-social-network-in-go-7-authorization-1d519c97f155)
 8. [REST APIs Design and Server Building in Go(8-Webhooks)](https://medium.com/@lordmoma/build-a-social-network-in-go-8-webhooks-ebc047c344b4)
 9. [REST APIs Design and Server Building in Go(9-URL Queries)](https://medium.com/@lordmoma/rest-apis-design-and-server-building-in-go-9-url-queries-df4e2a6c69a2)
+
+## ⚙️ Set Up
+
+Inside the Go module:
+
+```bash
+go build -o chirpy && ./chirpy --debug
+```
+
+## 👏 Contributing and Expanding the Learning Process
+
+I would love your help! Contribute by forking the repo and opening pull requests. Please ensure that your code passes the existing tests and linting, and write tests to test your changes if applicable.
+
+All pull requests should be submitted to the `main` branch.
